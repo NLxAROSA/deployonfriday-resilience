@@ -1,0 +1,6 @@
+---
+applications:
+- name: resilience-provider
+  memory: 1024M
+  random-route: true
+  path: target/resilience-provider-0.0.1-SNAPSHOT.jar
