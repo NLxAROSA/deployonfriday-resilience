@@ -1,8 +1,8 @@
 ---
 applications:
-- name: resilience-provider
+- name: resilience-consumer
   memory: 1024M
   random-route: true
-  path: target/resilience-provider-0.0.1-SNAPSHOT.jar
+  path: target/resilience-consumer-0.0.1-SNAPSHOT.jar
   services:
   - service-registry

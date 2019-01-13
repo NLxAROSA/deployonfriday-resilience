@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>io.pivotal.lars.friday.resilience</groupId>
-	<artifactId>resilience-provider</artifactId>
+	<artifactId>resilience-consumer</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>demo</name>
 	<description>Demo project for Spring Boot</description>
@@ -28,14 +28,14 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
         <dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.4</version>
-		</dependency>
-		<dependency>
             <groupId>io.pivotal.spring.cloud</groupId>
             <artifactId>spring-cloud-services-starter-service-registry</artifactId>
         </dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -51,8 +51,8 @@
 			</plugin>
 		</plugins>
 	</build>
-	
-    <dependencyManagement>
+
+	<dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>io.pivotal.spring.cloud</groupId>
@@ -70,4 +70,5 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
 </project>
