@@ -1,22 +1,10 @@
 # deployonfriday-resilience
 Resilience for the Deploy On Friday series
 
-Check out this project, then build both apps using 'mvnw package' (Win) or './mvnw package'
+Check out this project, then build both apps using 'mvnw package' (Win) or './mvnw package' (Mac/Linux)
 
-1. Deploy the apps to your favorite CF flavor.
+Start the resilience-provider using 'mvnw spring-boot:run' (Win) or './mvnw spring-boot:run' (Mac/Linux)
 
-cf push
+Start the resilience-consumer using 'mvnw spring-boot:run' (Win) or './mvnw spring-boot:run' (Mac/Linux)
 
-2. Map internal route to the provider application in CF.
-
-cf map-route resilience-provider apps.internal --hostname resilience-provider
-
-3. Add a network policy to connect to the local domain
-
-cf add-network-policy resilience-consumer --destination-app resilience-provider --protocol tcp --port 8080
-
-4. Restage both apps
-
-cf restage resilience-provider
-
-cf restage resilience-consumer
+Use your favorite tool to test the consumer on http://localhost:8080/bulkhead and https://localhost:8080/circuitbreaker?shouldFail=true|false (mine is Apache Bench)
