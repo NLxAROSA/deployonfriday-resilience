@@ -1,14 +1,17 @@
 package io.pivotal.lars.friday.resilience.resilienceconsumer;
 
-import java.util.function.Supplier;
+import java.time.Duration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import io.github.resilience4j.bulkhead.Bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadConfig;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.vavr.CheckedFunction0;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
@@ -22,17 +25,33 @@ public class ConsumerController {
 
     private final RestTemplate restTemplate;
     private final String providerUri;
-    private final BulkheadConfig config;
     private final Bulkhead bulkhead;
+    private final CircuitBreaker circuitBreaker;
 
     public ConsumerController(RestTemplate restTemplate, @Value("${provider.uri}") String providerUri,
             @Value("${maxConcurrent}") int maxConcurrent) {
         this.restTemplate = restTemplate;
         this.providerUri = providerUri;
-        config = BulkheadConfig.custom().maxConcurrentCalls(maxConcurrent).build();
-        bulkhead = Bulkhead.of("resilience-provider", config);
-        bulkhead.getEventPublisher().onCallPermitted(event -> log.info("Call permitted"))
-                .onCallRejected(event -> log.info("Call rejected"));
+        this.bulkhead = createBulkHead(maxConcurrent);
+        this.circuitBreaker = createCircuitBreaker();
+    }
+
+    private Bulkhead createBulkHead(int maxConcurrent) {
+        BulkheadConfig bulkheadConfig = BulkheadConfig.custom().maxConcurrentCalls(maxConcurrent).build();
+        Bulkhead bulkhead = Bulkhead.of("resilience-provider", bulkheadConfig);
+        bulkhead.getEventPublisher().onCallPermitted(event -> log.info("Call permitted by bulkhead"))
+                .onCallRejected(event -> log.info("Call rejected by bulkhead"));
+        return bulkhead;
+    }
+
+    private CircuitBreaker createCircuitBreaker() {
+        CircuitBreakerConfig circuitBreakerConfig = CircuitBreakerConfig.custom().failureRateThreshold(50)
+                .waitDurationInOpenState(Duration.ofMillis(20000)).build();
+        CircuitBreaker circuitBreaker = CircuitBreaker.of("resilience-provider", circuitBreakerConfig);
+        circuitBreaker.getEventPublisher().onSuccess(event -> log.info("Call success via circuit breaker"))
+                .onCallNotPermitted(event -> log.info("Call denied by circuit breaker"))
+                .onError(event -> log.info("Call failed via circuit breaker"));
+        return circuitBreaker;
     }
 
     @GetMapping()
@@ -40,11 +59,27 @@ public class ConsumerController {
         return "The message was " + restTemplate.getForObject(providerUri, String.class);
     }
 
-    @GetMapping("/slow")
-    public String slow() {
-        CheckedFunction0<String> bulkheadedBackend = Bulkhead.decorateCheckedSupplier(bulkhead,
+    @GetMapping("/bulkhead")
+    public String bulkhead() {
+        CheckedFunction0<String> someServiceCall = Bulkhead.decorateCheckedSupplier(bulkhead,
                 () -> "The message was " + restTemplate.getForObject(providerUri + "/slow", String.class));
-        Try<String> result = Try.of(bulkheadedBackend).recover((throwable) -> "This is a fallback");
+        Try<String> result = Try.of(someServiceCall).recover((throwable) -> "This is a bulkhead fallback");
+        return result.get();
+    }
+
+    @GetMapping("/circuitbreaker")
+    public String circuitBreakerFail(@RequestParam boolean shouldFail) {
+        if (shouldFail) {
+            return callServiceViaCircuitBreaker("/error");
+        } else {
+            return callServiceViaCircuitBreaker("/");
+        }
+    }
+
+    private String callServiceViaCircuitBreaker(String uri) {
+        CheckedFunction0<String> someServiceCall = CircuitBreaker.decorateCheckedSupplier(circuitBreaker,
+                () -> "The message was " + restTemplate.getForObject(providerUri + uri, String.class));
+        Try<String> result = Try.of(someServiceCall).recover((throwable) -> "This is a circuit breaker fallback");
         return result.get();
     }
 }
