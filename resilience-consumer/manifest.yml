@@ -4,6 +4,3 @@ applications:
   memory: 1024M
   random-route: true
   path: target/resilience-consumer-0.0.1-SNAPSHOT.jar
-  services:
-  - service-registry
-  - my-rabbitmq
