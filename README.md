@@ -1,7 +1,7 @@
 # deployonfriday-resilience
 Resilience for the Deploy On Friday series
 
-#How to use
+# How to use
 * Check out this project, then build both apps using 'mvnw package' (Win) or './mvnw package' (Mac/Linux)
 * Start the resilience-provider using 'mvnw spring-boot:run' (Win) or './mvnw spring-boot:run' (Mac/Linux)
 * Start the resilience-consumer using 'mvnw spring-boot:run' (Win) or './mvnw spring-boot:run' (Mac/Linux)
