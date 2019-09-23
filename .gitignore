@@ -1,4 +1,4 @@
-/target/
+target/
 !.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###
@@ -9,6 +9,7 @@
 .settings
 .springBeans
 .sts4-cache
+.vscode
 
 ### IntelliJ IDEA ###
 .idea
@@ -23,3 +24,8 @@
 /dist/
 /nbdist/
 /.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+.DS_Store

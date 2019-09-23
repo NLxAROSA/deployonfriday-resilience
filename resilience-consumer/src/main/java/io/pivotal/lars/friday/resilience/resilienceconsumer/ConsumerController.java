@@ -2,6 +2,8 @@ package io.pivotal.lars.friday.resilience.resilienceconsumer;
 
 import java.time.Duration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,15 +16,14 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.vavr.CheckedFunction0;
 import io.vavr.control.Try;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * ConsumerController
  */
 @RestController
-@Slf4j
 public class ConsumerController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerController.class);
     private final RestTemplate restTemplate;
     private final String providerUri;
     private final Bulkhead bulkhead;
@@ -39,8 +40,8 @@ public class ConsumerController {
     private Bulkhead createBulkHead(int maxConcurrent) {
         BulkheadConfig bulkheadConfig = BulkheadConfig.custom().maxConcurrentCalls(maxConcurrent).build();
         Bulkhead bulkhead = Bulkhead.of("resilience-provider", bulkheadConfig);
-        bulkhead.getEventPublisher().onCallPermitted(event -> log.info("Call permitted by bulkhead"))
-                .onCallRejected(event -> log.info("Call rejected by bulkhead"));
+        bulkhead.getEventPublisher().onCallPermitted(event -> LOGGER.info("Call permitted by bulkhead"))
+                .onCallRejected(event -> LOGGER.info("Call rejected by bulkhead"));
         return bulkhead;
     }
 
@@ -48,9 +49,9 @@ public class ConsumerController {
         CircuitBreakerConfig circuitBreakerConfig = CircuitBreakerConfig.custom().failureRateThreshold(50)
                 .waitDurationInOpenState(Duration.ofMillis(20000)).build();
         CircuitBreaker circuitBreaker = CircuitBreaker.of("resilience-provider", circuitBreakerConfig);
-        circuitBreaker.getEventPublisher().onSuccess(event -> log.info("Call success via circuit breaker"))
-                .onCallNotPermitted(event -> log.info("Call denied by circuit breaker"))
-                .onError(event -> log.info("Call failed via circuit breaker"));
+        circuitBreaker.getEventPublisher().onSuccess(event -> LOGGER.info("Call success via circuit breaker"))
+                .onCallNotPermitted(event -> LOGGER.info("Call denied by circuit breaker"))
+                .onError(event -> LOGGER.info("Call failed via circuit breaker"));
         return circuitBreaker;
     }
 
