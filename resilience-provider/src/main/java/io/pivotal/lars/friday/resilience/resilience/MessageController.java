@@ -13,18 +13,18 @@ public class MessageController {
 
     @GetMapping("/")
     public String okay() {
-        return "I'm fine.";
+        return "I'm okay.";
     }
 
     @GetMapping("/slow")
     public String slow() throws InterruptedException {
         Thread.sleep(SECOND);
-        return "I'm fine, just slow";
+        return "I'm okay, just slow";
     }
 
     @GetMapping("/error")
     public String error() {
-        throw new InternalServerErrorException("I'm definitely not fine!");
+        throw new InternalServerErrorException("I'm definitely not okay!");
     }
 
 }
