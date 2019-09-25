@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class MessageController {
 
-    private static final int SECOND = 1000;
+    private static final int WAIT_TIME_MS = 1000;
 
     @GetMapping("/")
     public String okay() {
@@ -18,7 +18,7 @@ public class MessageController {
 
     @GetMapping("/slow")
     public String slow() throws InterruptedException {
-        Thread.sleep(SECOND);
+        Thread.sleep(WAIT_TIME_MS);
         return "I'm okay, just slow";
     }
 
